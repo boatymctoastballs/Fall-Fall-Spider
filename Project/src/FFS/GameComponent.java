@@ -16,10 +16,9 @@ public class GameComponent extends JComponent implements BoardListener {
 
 
         EnumMap<SquareType, Color> enumMap =  new EnumMap<SquareType, Color>(SquareType.class);
-        enumMap.put(SquareType.SHORT, Color.ORANGE);
-        enumMap.put(SquareType.LONG, Color.YELLOW);
-        enumMap.put(SquareType.DROPLET, Color.BLUE);
+        enumMap.put(SquareType.OBSTACLE, Color.ORANGE);
         enumMap.put(SquareType.SPIDER, Color.BLACK);
+        enumMap.put(SquareType.OUTSIDE, Color.BLACK);
         this.enumMap = enumMap;
     }
 
@@ -51,7 +50,6 @@ public class GameComponent extends JComponent implements BoardListener {
 
     @Override
     public void boardChanged() {
-        System.out.println("heja erik"+" "+ Board.score);
         repaint();
 
     }

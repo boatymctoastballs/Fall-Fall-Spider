@@ -8,10 +8,10 @@ import java.awt.event.ActionListener;
 /**
  * Created by Hans on 22/03/14.
  */
-public class GameFrame extends JFrame implements BoardListener {
+public class GameFrame extends JFrame {
 
 
-    public GameFrame(Board board){
+    public GameFrame(final Board board){
         super("FFS");
         setFocusable(true);
         final GameComponent gameComponent = new GameComponent(board);
@@ -19,12 +19,32 @@ public class GameFrame extends JFrame implements BoardListener {
         board.addBoardListener(gameComponent);
         this.add(gameComponent,BorderLayout.CENTER);
 
-        JLabel scoreLabel = new JLabel("Score: " + Board.score);
+
+
+
+        JLabel scoreLabel = new JLabel("Score: " + board.getScore());
         this.add(scoreLabel,BorderLayout.NORTH);
+
+
+
 
         createMenu();
         this.pack();
+        this.setSize(800,720);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setResizable(false);
         this.setVisible(true);
+        final Action doOneStep = new AbstractAction(){
+            public void actionPerformed(ActionEvent e){
+                board.tick();
+                gameComponent.boardChanged();
+            }
+        };
+        final Timer clockTimer = new Timer (150, doOneStep);
+        clockTimer.setCoalesce(true);
+        clockTimer.start();
+
+
 
         gameComponent.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("LEFT"),("doActionMapL"));
         gameComponent.getActionMap().put("doActionMapL",board.moveLeft);
@@ -32,6 +52,7 @@ public class GameFrame extends JFrame implements BoardListener {
         gameComponent.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("RIGHT"),("doActionMapR"));
         gameComponent.getActionMap().put("doActionMapR",board.moveRight);
     }
+
 
     private void createMenu(){
         final JMenu file = new JMenu("File");
@@ -52,11 +73,6 @@ public class GameFrame extends JFrame implements BoardListener {
         this.setJMenuBar(bar);
 
     }
-    @Override
-    public void boardChanged() {
-        System.out.println("heja erik");
-        repaint();
 
-    }
 }
 

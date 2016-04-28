@@ -15,13 +15,16 @@ public class Board {
     private Poly spider;
     private int spiderX;
     private int spiderY;
-    private Poly block;
-    private int blockX;
-    private int blockY;
+    private Poly obstacle = null;
+    private int obstacleX;
+    private int obstacleY;
     public static int score=0;
     private int cooldown=0;
     private int numberOfBlocks;
     private static Random random = new Random();
+    private int life = 2;
+    private int finalScore;
+
 
     public int getWidth() {  //get width of the board
         return width;
@@ -30,6 +33,9 @@ public class Board {
     public int getHeight() { //get height of the board
         return height;
     }
+
+    public int getScore() { return score; }
+
 
     public Board(int width, int height) {  //the board, creates a board
         this.width = width;
@@ -42,7 +48,7 @@ public class Board {
             }
         }
         for (int column = 1; column<width-1; column++){ //makes inner squares as EMPTY
-            for ( int row = 1; column<row-1; row++){
+            for ( int row = 1; row<height-1; row++){
                 board[column][row]=SquareType.EMPTY;
             }
         }
@@ -67,26 +73,37 @@ public class Board {
     }
 
 
-    public void tick(Board myboard){ //function of every tick (timer)
-        score+=10;
+    public void tick(){ //function of every tick (timer)
+        if (checkCollision()){
+            loseCheck();
+        }
+        moveObstacle();
+        spawnObstacle();
 
-        if (block == null) { //if there is no block on board, spawn block
-            blockX = myboard.getWidth()/2;
-            blockY = getHeight()/2;
-            this.block = Minomaker.getPoly(random.nextInt(Minomaker.getNumberOfTypes()));
+
+         //if there is no block on board, spawn block
+            //blockX = myboard.getWidth()/2;
+            //blockY = getHeight()/2;
+            //this.block = Minomaker.getPoly(random.nextInt(Minomaker.getNumberOfTypes()));
         }
 
-        else {//if there is blocks
-            this.blockY--;
-
+        //else {//if there is blocks
+            //this.blockY--;
+        //    moveObstacle();
             //spiderX++;
             //checkCollision();
-            notifyListeners();
                 //do what
+        //}
+        //notifyListeners();
 
+    public SquareType getSquareType(int x, int y){
+        if(x>=0 || x< width-1 || y>=0 || y<height-1){
+            return board[x][y];
         }
-
+        return null;
     }
+
+
 
     public SquareType pos(int x, int y){
         if (spider == null){
@@ -111,6 +128,11 @@ public class Board {
             return spider.getSquare();
         }
         return board[x][y];
+    }
+
+    public void setSquareType(int x, int y, SquareType squareType){
+        board[x][y] = squareType;
+        notifyListeners();
     }
 
 
@@ -149,5 +171,85 @@ public class Board {
             }
         }
     };
+
+    //Spawning random obstacle
+    private void moveObstacle(){
+        for (int row = 1; row<height-1; row++){
+            for (int column = 1; column<width-1; column++){
+                if (getSquareType(column, row) == SquareType.OBSTACLE) {
+                    if (pos(column, row - 1) == SquareType.OUTSIDE) {
+                        setSquareType(column, row, SquareType.EMPTY);
+                    }
+                    else {
+                        setSquareType(column, row - 1, SquareType.OBSTACLE);
+                        setSquareType(column, row, SquareType.EMPTY);
+
+
+                    }
+                }
+            }
+        }
+        notifyListeners();
+    }
+
+    private void spawnObstacle(){
+        boolean spawnNew = true;
+        Random random = new Random();
+        int counter = 0;
+
+        for (int column = 1; column<width-2; column++){
+            for (int row = height-6; row<height-2; row++){
+                if(getSquareType(column, row) != SquareType.EMPTY){
+                    spawnNew = false;
+                    break;
+                }
+            }
+        }
+        if(spawnNew){
+            score+=1;
+            for (int x = 1; x<width-1; x++){
+                if(random.nextInt(2)==1 && counter < width-2){
+                    setSquareType(x,height-2,SquareType.OBSTACLE);
+                    counter++;
+                }
+            }
+        notifyListeners();
+        }
+    }
+
+    private boolean checkCollision(){
+        for(int x = 1; x < width-1; x++){
+            if(getSquareType(spiderX,spiderY+1)==SquareType.OBSTACLE){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void loseCheck(){
+        if(life==0){
+            gameOver();
+
+            System.out.println("Game Over, noob");
+        }
+        else if(checkCollision()){
+            this.life--;
+            System.out.println(life);
+        }
+        System.out.println(score);
+    }
+
+    private void gameOver(){
+        for (int column = 1; column<width-1; column++){
+            for (int row = 1; row<height-1; row++){
+                setSquareType(column,row,SquareType.OUTSIDE);
+            }
+        }
+        finalScore = score;
+        System.out.println(finalScore);
+
+    }
+
+
 
 }
